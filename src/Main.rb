@@ -1,10 +1,11 @@
 ##
-# fileName: main.rb
-# fileDescription: entry point to the application 
+# fileName: Main.rb
+# fileDescription: Entry point to the application 
 ##
 
 require './models/Garage.rb'
 require './models/Car.rb'
+require './Helpers.rb'
 class Main
 
     #constructor for main
@@ -26,12 +27,12 @@ class Main
         end
 
         $slotSize = params[0]
-        if (!($slotSize.is_a? Integer) && ($slotSize.to_i < 1))
-            return puts 'ERR:Garage size should be numeric'
+        if (!is_valid_slot($slotSize))
+            return puts 'ERR:Invalid Garage Size'
         end
 
         @garage = Garage.new($slotSize)
-        return puts 'Created a parking garage with' << ($slotSize.to_s) << ' slots.'
+        return puts 'Created a parking garage with ' << ($slotSize.to_s) << ' slots.'
 
     end
 
@@ -49,16 +50,8 @@ class Main
         $car  = Car.new
         $car.number = params[0]
         $car.colour = params[1]
-
-        $slot = @garage.park($car)
-        $slot += 1
-
-        if($slot == 0)
-            return puts 'Sorry, parking garage is full.'
-        end
-
-        puts 'Park in slot number:' << $slot.to_s << '.'
-
+        
+        return @garage.park($car)
     end
 
     #leave parking slot
@@ -73,8 +66,8 @@ class Main
         end
 
         $slot = params[0]
-        if (!($slot.is_a? Integer) && ($slot.to_i < 1))
-            return puts 'ERR:Parking slot is numeric'
+        if (!is_valid_slot($slot))
+            return puts 'ERR:Invalid parking slot'
         end
 
         return puts @garage.leave($slot)
@@ -93,29 +86,56 @@ class Main
 
     #finds registration number of cars with particular colour
     def registration_numbers_of_cars_with_colour(params)
+        
+        if (!defined?(@garage))
+            return puts 'ERR:Garage doesn''t exist'
+        end
 
-        return puts 'To be implemented'
+        if (params.length < 1)
+            return puts 'ERR:Enter a colour to find cars'
+        end
+
+        $colour = params[0]
+        return puts @garage.registration_numbers_of_cars_with_colour($colour)
 
     end
 
     #finds the slot of a car, given car number
-    def slot_for_registration_number
+    def slot_for_registration_number(params)
 
-        return puts 'To be implemented'
+        if (!defined?(@garage))
+            return puts 'ERR:Garage doesn''t exist'
+        end
+
+        if (params.length < 1)
+            return puts 'ERR:Enter a registration number to find car'
+        end
+
+        $number = params[0]
+        return puts @garage.slot_for_registration_number($number)
 
     end
 
     #Finds all slots with a particular colour car
-    def slots_for_cars_with_colour
+    def slots_for_cars_with_colour(params)
 
-        return puts 'To be implemented'
+        if (!defined?(@garage))
+            return puts 'ERR:Garage doesn''t exist'
+        end
+
+        if (params.length < 1)
+            return puts 'ERR:Enter a colour to find cars'
+        end
+
+        $colour = params[0]
+        return puts @garage.slots_for_cars_with_colour($colour)
 
     end
 
     #reads from the prompt
     def read_prompt(*args)
 
-        print('>',*args)
+        print('> ',*args)
         return gets.chomp
 
     end
@@ -139,14 +159,24 @@ class Main
 
     end
 
-    #processes file based commands
+
+    #processes commands from a file
     def process_file(filepath)
 
-        puts 'reading from file hasn''t been implemented yet'
-    
+        File.readlines(filepath).each do |line|
+
+            if(line.chomp.length > 0 )
+                command, *params = line.split(/\s/)
+                if (command == 'exit')
+                    return puts 'Bye!'
+                end
+
+                self.process_command(command,params)
+            end
+
+        end
+
     end
-
-
 
 
     #executes a command 
